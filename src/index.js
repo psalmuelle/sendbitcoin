@@ -2,11 +2,14 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const sendBitcoin = require("./send.bitcoin");
 const CryptoJS = require("crypto-js");
+const cors = require("cors");
 
 const app = express();
 const port = 8000;
 
 app.use(bodyParser.json());
+
+app.use(cors());
 
 app.post("/api/sendBtc", (req, res) => {
   const data = req.body;
