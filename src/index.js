@@ -20,7 +20,6 @@ app.post("/api/sendBtc", (req, res) => {
         decryptedData;
 
       //send the bitcoin
-
       sendBitcoin({
         receiverAddress: receiverAddress,
         amountToSend: amountToSend,
