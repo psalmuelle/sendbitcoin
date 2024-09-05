@@ -3,11 +3,13 @@ const axios = require("axios");
 const bitcore = require("bitcore-lib");
 const TESTNET = true;
 
-module.exports = sendBitcoin = async (recieverAddress, amountToSend) => {
+module.exports = sendBitcoin = async ({
+  receiverAddress,
+  amountToSend,
+  privateKey,
+  payerAddress,
+}) => {
   try {
-    const privateKey =
-      "7e78be29bbf02ea76a1af07b38a4e799018fbc653fdf9bc7970f09fcdd94ef0a";
-    const sourceAddress = "my582nh4k72gTHQqfQ5EcFpY7EGcYezPG2";
     const satoshiToSend = amountToSend * 100000000;
     let fee = 0;
     let inputCount = 0;
@@ -19,16 +21,15 @@ module.exports = sendBitcoin = async (recieverAddress, amountToSend) => {
     let inputs = [];
     const resp = await axios({
       method: "GET",
-      url: `https://blockstream.info/testnet/api/address/${sourceAddress}/utxo`,
+      url: `https://blockstream.info/testnet/api/address/${payerAddress}/utxo`,
     });
     const utxos = resp.data;
 
     for (const utxo of utxos) {
       let input = {};
       input.satoshis = utxo.value;
-      input.script =
-        bitcore.Script.buildPublicKeyHashOut(sourceAddress).toHex();
-      input.address = sourceAddress;
+      input.script = bitcore.Script.buildPublicKeyHashOut(payerAddress).toHex();
+      input.address = payerAddress;
       input.txId = utxo.txid;
       input.outputIndex = utxo.vout;
       totalAmountAvailable += utxo.value;
@@ -56,10 +57,10 @@ module.exports = sendBitcoin = async (recieverAddress, amountToSend) => {
     transaction.from(inputs);
 
     // set the recieving address and the amount to send
-    transaction.to(recieverAddress, satoshiToSend);
+    transaction.to(receiverAddress, satoshiToSend);
 
     // Set change address - Address to receive the left over funds after transfer
-    transaction.change(sourceAddress);
+    transaction.change(payerAddress);
 
     //manually set transaction fees: 20 satoshis per byte
     transaction.fee(Math.round(fee));

@@ -1,13 +1,48 @@
-const { testnet, mainnet } = require("bitcore-lib/lib/networks");
-const { createWallet, createHDWallet } = require("./wallet.bitcoin");
+const express = require("express");
+const bodyParser = require("body-parser");
 const sendBitcoin = require("./send.bitcoin");
+const CryptoJS = require("crypto-js");
 
-sendBitcoin("mfcCYZrefb66Fpd6byNDyDMWmCGYqT8DT7", 0.00003)
-  .then((result) => {
-    console.log(result);
-  })
-  .catch((error) => {
-    console.log(error);
-  });
+const app = express();
+const port = 8000;
 
-// console.log(createHDWallet(testnet))
+app.use(bodyParser.json());
+
+app.post("/api/sendBtc", (req, res) => {
+  const data = req.body;
+  try {
+    if (data) {
+      //decrypt the data
+      const bytes = CryptoJS.AES.decrypt(data, process.env.DECRYPTION_KEY);
+      const decryptedData = JSON.parse(bytes.toString(CryptoJS.enc.Utf8));
+
+      const { receiverAddress, amountToSend, privateKey, payerAddress } =
+        decryptedData;
+
+      //send the bitcoin
+
+      sendBitcoin({
+        receiverAddress: receiverAddress,
+        amountToSend: amountToSend,
+        privateKey: privateKey,
+        payerAddress: payerAddress,
+      }).then((result) => {
+        // Send a response
+        res.status(200).json({
+          message: "Data received successfully",
+          txId: result,
+        });
+      });
+    }
+  } catch (err) {
+    res.status(400).json({
+      message: "An error occurred",
+      error: err.message,
+    });
+  }
+});
+
+// Start the server
+app.listen(port, () => {
+  console.log(`Server running at http://localhost:${port}`);
+});
