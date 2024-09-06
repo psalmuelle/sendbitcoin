@@ -15,6 +15,10 @@ module.exports = sendBitcoin = async ({
     let inputCount = 0;
     let outputCount = 2;
 
+    const recommendedFee = axios.get(
+      "https://mempool.space/api/v1/fees/recommended"
+    );
+
     const transaction = new bitcore.Transaction();
     let totalAmountAvailable = 0;
 
@@ -46,10 +50,8 @@ module.exports = sendBitcoin = async ({
     const transactionSize =
       inputCount * 180 + outputCount * 34 + 10 - inputCount;
 
-    fee = (transactionSize * 100) / 3; // satoshi per byte
-    if (TESTNET) {
-      fee = transactionSize * 1; // 1 sat/byte is fine for testnet
-    }
+    fee = (transactionSize * recommendedFee.data.halfHourFee) / 3; // satoshi per byte
+
     if (totalAmountAvailable - satoshiToSend - fee < 0) {
       throw new Error("Balance is too low for this transaction");
     }
