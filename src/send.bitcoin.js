@@ -15,7 +15,7 @@ module.exports = sendBitcoin = async ({
     let inputCount = 0;
     let outputCount = 2;
 
-    const recommendedFee = axios.get(
+    const recommendedFee = await axios.get(
       "https://mempool.space/api/v1/fees/recommended"
     );
 
@@ -70,6 +70,7 @@ module.exports = sendBitcoin = async ({
     // Sign transaction with your private key
     transaction.sign(privateKey);
 
+    transaction.verify();
     // serialize Transactions
     const serializedTransaction = transaction.serialize();
 
@@ -79,8 +80,10 @@ module.exports = sendBitcoin = async ({
       url: `https://blockstream.info/testnet/api/tx`,
       data: serializedTransaction,
     });
-    return result.data;
+
+    return result;
   } catch (error) {
+    console.log("error", error);
     return error;
   }
 };

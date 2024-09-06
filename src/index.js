@@ -50,7 +50,7 @@ app.post("/api/sendBtc", async (req, res) => {
 
     res.status(200).json({
       message: "Data received successfully",
-      tx: tnxData,
+      tx: tnxData.data,
     });
   } catch (err) {
     res.status(400).json({
