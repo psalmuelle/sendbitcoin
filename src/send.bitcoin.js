@@ -52,6 +52,7 @@ module.exports = sendBitcoin = async ({
 
     fee = (transactionSize * recommendedFee.data.halfHourFee) / 3; // satoshi per byte
 
+    console.log(fee);
     if (totalAmountAvailable - satoshiToSend - fee < 0) {
       throw new Error("Balance is too low for this transaction");
     }
